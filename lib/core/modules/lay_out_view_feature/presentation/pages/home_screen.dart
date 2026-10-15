@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:notes_app/core/app_them_maneger/app_colors.dart';
-
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/pages/notes_screen.dart';
 import 'plus_tap_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // 1. قائمة الملاحظات تبدأ فارغة تماماً كما طلبت
+  List<Map<String, dynamic>> notesList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +52,13 @@ class HomeScreen extends StatelessWidget {
                     color: AppColors.cardColor,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child:  const TextField(
+                  child: const TextField(
                     style: TextStyle(color: AppColors.primaryText),
                     decoration: InputDecoration(
-                      icon: Icon(Icons.search, color: AppColors.secondaryText,),
+                      icon: Icon(
+                        Icons.search,
+                        color: AppColors.secondaryText,
+                      ),
                       hintText: 'Search Here',
                       hintStyle: TextStyle(color: AppColors.secondaryText),
                       border: InputBorder.none,
@@ -56,141 +67,127 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              Expanded(
-                child: ListView(
-                  children: [
 
-                    SizedBox(
-                      height: 188,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '28 May',
-                                  style: TextStyle(
-                                    color: AppColors.secondaryText,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.delete_outline,
-                                  color: AppColors.secondaryText,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                            const Text(
-                              'Task Management App Ui Design',
-                              style: TextStyle(
-                                color: AppColors.primaryText,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Text(
-                              'In publishing and graphic design',
-                              style: TextStyle(
-                                color: AppColors.secondaryText,
-                                fontSize: 14,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const Align(
-                              alignment: Alignment.bottomRight,
-                              child: Text(
-                                '. Just Now ',
-                                style: TextStyle(
-                                  color: AppColors.secondaryText,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+              // 2. عرض الكروت ديناميكياً أو إظهار رسالة لو القائمة فارغة
+              Expanded(
+                child: notesList.isEmpty
+                    ? const Center(
+                  child: Text(
+                    'No notes yet.\nTap + to create one!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.secondaryText,
+                      fontSize: 16,
                     ),
-                    const SizedBox(height: 15),
-                    SizedBox(
-                      height: 219,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '12 May',
-                                  style: TextStyle(
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: notesList.length,
+                  itemBuilder: (context, index) {
+                    final note = notesList[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 15.0),
+                      child: GestureDetector(
+                        // عند الضغط على الكارت نرسل النوتة الحالية لفتحها وتعديلها
+                        onTap: () async {
+                          final updatedNote = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NotesScreen(existingNote: note),
+                            ),
+                          );
+                          // لو تم التعديل والحفظ، نحدث الكارت في مكانه
+                          if (updatedNote != null && updatedNote is Map<String, dynamic>) {
+                            setState(() {
+                              notesList[index] = updatedNote;
+                            });
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    note['date'] ?? '',
+                                    style: const TextStyle(
+                                      color: AppColors.secondaryText,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  // زر سلة المهملات للحذف
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        notesList.removeAt(index);
+                                      });
+                                    },
+                                    child: const Icon(
+                                      Icons.delete_outline,
+                                      color: AppColors.secondaryText,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                note['title'] ?? '',
+                                style: const TextStyle(
+                                  color: AppColors.primaryText,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+
+                              // لو الكارت عبارة عن قائمة Checkboxes
+                              if (note['isChecklist'] == true && note['items'] != null) ...[
+                                Column(
+                                  children: (note['items'] as List)
+                                      .map((item) => _buildCheckBoxItem(
+                                    item['title'],
+                                    item['isDone'],
+                                  ))
+                                      .toList(),
+                                ),
+                              ],
+
+                              const SizedBox(height: 10),
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: Text(
+                                  note['timeAgo'] ?? '',
+                                  style: const TextStyle(
                                     color: AppColors.secondaryText,
                                     fontSize: 15,
                                   ),
                                 ),
-                                Icon(
-                                  Icons.delete_outline,
-                                  color: AppColors.secondaryText,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                            const Text(
-                              'Shopping List',
-                              style: TextStyle(
-                                color: AppColors.primaryText,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                            Column(
-                              children: [
-                                _buildCheckBoxItem('Apple'),
-                                _buildCheckBoxItem('Mango'),
-                                _buildCheckBoxItem('Note'),
-                                _buildCheckBoxItem('Work'),
-                              ],
-                            ),
-                            const Align(
-                              alignment: Alignment.bottomRight,
-                              child: Text(
-                                '1h ago',
-                                style: TextStyle(
-                                  color: AppColors.secondaryText,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    )
-                  ],
+                    );
+                  },
                 ),
               )
-            ]
+            ],
           ),
         ),
       ),
       bottomNavigationBar: Container(
         height: 88,
         color: AppColors.bottomBar,
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -210,13 +207,21 @@ class HomeScreen extends StatelessWidget {
               top: -32,
               right: 6,
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  // فتح شاشة PlusTab ومنها للملاحظات، وعند الرجوع يتم التقاط النوتة الجديدة
+                  final newNote = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const PlusTabScreen(),
                     ),
                   );
+
+                  // لو راجعين بداتا جديدة، نضيفها للقائمة فوراً
+                  if (newNote != null && newNote is Map<String, dynamic>) {
+                    setState(() {
+                      notesList.add(newNote);
+                    });
+                  }
                 },
                 child: Container(
                   width: 80,
@@ -230,13 +235,13 @@ class HomeScreen extends StatelessWidget {
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
-                    ]
+                    ],
                   ),
-                  child: Center(
+                  child: const Center(
                     child: SizedBox(
                       width: 48,
                       height: 48,
-                      child: const Icon(
+                      child: Icon(
                         Icons.add,
                         color: AppColors.primaryText,
                         size: 50,
@@ -251,24 +256,24 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-  Widget _buildCheckBoxItem(String title) {
+
+  Widget _buildCheckBoxItem(String title, bool isDone) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         children: [
-          const Icon(
-            Icons.check_box_outline_blank,
-            size: 15,
-            color: AppColors.secondaryText,
+          Icon(
+            isDone ? Icons.check_box : Icons.check_box_outline_blank,
+            size: 16,
+            color: isDone ? const Color(0xFF8AC53E) : AppColors.secondaryText,
           ),
-          const SizedBox(
-            width: 8,
-          ),
+          const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
-              color: AppColors.secondaryText,
+            style: TextStyle(
+              color: isDone ? AppColors.primaryText : AppColors.secondaryText,
               fontSize: 13,
+              decoration: isDone ? TextDecoration.lineThrough : TextDecoration.none,
             ),
           ),
         ],

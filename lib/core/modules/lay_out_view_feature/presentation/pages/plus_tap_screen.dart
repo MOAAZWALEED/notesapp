@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notes_app/core/app_them_maneger/app_colors.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/pages/notes_screen.dart';
 
 class PlusTabScreen extends StatelessWidget {
   const PlusTabScreen({super.key});
@@ -60,34 +61,50 @@ class PlusTabScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              width: 153,
-                              height: 62,
-                              decoration: BoxDecoration(
-                                color: AppColors.greenButton,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.note_alt_outlined, color: Colors.black, size: 22),
-                                  const SizedBox(width: 8),
-                                  SizedBox(
-                                    width: 87,
-                                    height: 26,
-                                    child: const Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        'Notes',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                            // زرار Notes المعدل ليستقبل النوتة ويرجع بيها للهوم سكرين
+                            GestureDetector(
+                              onTap: () async {
+                                final newNote = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const NotesScreen(),
+                                  ),
+                                );
+
+                                // لو المستخدم كتب وحفظ ورجع بنوتة، نبعتها للهوم سكرين فوراً
+                                if (newNote != null) {
+                                  Navigator.pop(context, newNote);
+                                }
+                              },
+                              child: Container(
+                                width: 153,
+                                height: 62,
+                                decoration: BoxDecoration(
+                                  color: AppColors.greenButton,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.note_alt_outlined, color: Colors.black, size: 22),
+                                    const SizedBox(width: 8),
+                                    SizedBox(
+                                      width: 87,
+                                      height: 26,
+                                      child: const Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'Notes',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                             Container(
@@ -208,6 +225,7 @@ class PlusTabScreen extends StatelessWidget {
       ],
     );
   }
+
   Widget _buildDivider() {
     return Center(
       child: SizedBox(
