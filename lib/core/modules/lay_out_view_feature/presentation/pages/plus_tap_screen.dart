@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:notes_app/core/app_them_maneger/app_colors.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/presentation/pages/notes_screen.dart';
 
-class PlusTabScreen extends StatelessWidget {
+class PlusTabScreen extends StatefulWidget {
   const PlusTabScreen({super.key});
+
+  @override
+  State<PlusTabScreen> createState() => PlusTabScreenState();
+}
+
+class PlusTabScreenState extends State<PlusTabScreen> {
+  Future<void> openCamera() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.camera);
+
+    if (image != null) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => NotesScreen(imagePath: image.path),
+        ),
+      );
+      if (context.mounted) {
+        Navigator.pop(context, result);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +44,7 @@ class PlusTabScreen extends StatelessWidget {
                   width: 350,
                   height: 130,
                   child: const Text(
-                    'What Notes '
-                        '\n'
-                        ' Do you Want??',
+                    'What Notes \n Do you Want??',
                     style: TextStyle(
                       color: AppColors.primaryText,
                       fontSize: 40,
@@ -61,19 +82,19 @@ class PlusTabScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // زرار Notes المعدل ليستقبل النوتة ويرجع بيها للهوم سكرين
+                            // زرار Notes
                             GestureDetector(
                               onTap: () async {
-                                final newNote = await Navigator.push(
+                                final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const NotesScreen(),
                                   ),
                                 );
 
-                                // لو المستخدم كتب وحفظ ورجع بنوتة، نبعتها للهوم سكرين فوراً
-                                if (newNote != null) {
-                                  Navigator.pop(context, newNote);
+                                if (context.mounted) {
+                                  // نرجع للهوم ونمرر نتيجة الحفظ
+                                  Navigator.pop(context, result);
                                 }
                               },
                               child: Container(
@@ -209,17 +230,22 @@ class PlusTabScreen extends StatelessWidget {
             ),
           ],
         ),
-        Container(
-          width: 33,
-          height: 33,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.arrow_forward_ios,
-            color: AppColors.secondaryText,
-            size: 14,
+        GestureDetector(
+          onTap: () {
+            openCamera();
+          },
+          child: Container(
+            width: 33,
+            height: 33,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.secondaryText,
+              size: 14,
+            ),
           ),
         ),
       ],

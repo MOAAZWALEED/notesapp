@@ -1,11 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:notes_app/core/app_them_maneger/app_colors.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_bloc.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_event.dart';
+
+import '../../domain/entity/note_entity.dart';
 
 class NotesScreen extends StatefulWidget {
   final Map<String, dynamic>? existingNote;
+  final String? imagePath;
 
-  const NotesScreen({super.key, this.existingNote});
+  const NotesScreen({super.key, this.existingNote, this.imagePath});
 
   @override
   State<NotesScreen> createState() => _NotesScreenState();
@@ -31,13 +39,18 @@ class _NotesScreenState extends State<NotesScreen> {
       _titleController.text = widget.existingNote!['title'] ?? '';
 
       // استرجاع عناصر الـ Checklist
-      if (widget.existingNote!['items'] != null) {
+      if (widget.existingNote!['items'] != null &&
+          (widget.existingNote!['items'] as List).isNotEmpty) {
         _checklistItems = List<Map<String, dynamic>>.from(
           (widget.existingNote!['items'] as List).map((item) => {
             'title': item['title'],
             'isDone': item['isDone'],
           }),
         );
+      } else if (widget.existingNote!['content'] != null &&
+          widget.existingNote!['content'].toString().isNotEmpty) {
+        // في حال عدم وجود قائمة، يتم استرجاع المحتوى النصي المباشر
+        _itemController.text = widget.existingNote!['content'];
       }
     }
   }
@@ -80,19 +93,47 @@ class _NotesScreenState extends State<NotesScreen> {
   // حفظ الملاحظة والرجوع للهوم سكرين مع الملاحظة (جديدة أو معدلة)
   void _saveAndPop() {
     final titleText = _titleController.text.trim();
-    if (titleText.isNotEmpty || _checklistItems.isNotEmpty) {
-      final savedNote = {
-        // الحفاظ على الـ id القديم في حالة التعديل
-        'id': widget.existingNote != null
-            ? widget.existingNote!['id']
-            : DateTime.now().millisecondsSinceEpoch.toString(),
-        'date': DateFormat('d MMM').format(_selectedDate),
-        'title': titleText.isEmpty ? 'New Note' : titleText,
-        'items': _checklistItems,
-        'timeAgo': 'Just now',
-        'isChecklist': true,
-      };
-      Navigator.pop(context, savedNote);
+    final itemInputText = _itemController.text.trim();
+
+    // نتحقق من وجود أي داتا قبل الحفظ
+    if (titleText.isNotEmpty || _checklistItems.isNotEmpty || itemInputText.isNotEmpty) {
+      final isUpdating = widget.existingNote != null && widget.existingNote!['id'] != null;
+      final String noteId = isUpdating
+          ? widget.existingNote!['id']
+          : DateTime.now().millisecondsSinceEpoch.toString();
+
+      // تجميع المحتوى سواء من العناصر أو من حقل الكتابة المباشر
+      String combinedContent = "";
+      if (_checklistItems.isNotEmpty) {
+        combinedContent = _checklistItems
+            .map((item) => "${item['isDone'] ? '[x]' : '[ ]'} ${item['title']}")
+            .join('\n');
+      } else if (itemInputText.isNotEmpty) {
+        combinedContent = itemInputText;
+      } else {
+        combinedContent = titleText;
+      }
+
+      final noteEntity = NoteEntity(
+        id: noteId,
+        title: titleText.isEmpty ? 'New Note' : titleText,
+        content: combinedContent,
+        date: DateFormat('d MMM').format(_selectedDate),
+        imagePath: widget.imagePath ?? (isUpdating ? widget.existingNote!['imagePath'] : null),
+      );
+
+      // التمييز بين التعديل والإضافة وإرسال الحدث للـ Bloc
+      if (isUpdating) {
+        BlocProvider.of<NotesBloc>(context).add(
+          UpdateNoteEvent(noteEntity),
+        );
+      } else {
+        BlocProvider.of<NotesBloc>(context).add(
+          AddNoteEvent(noteEntity),
+        );
+      }
+
+      Navigator.pop(context);
     } else {
       Navigator.pop(context);
     }
@@ -214,7 +255,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     ),
                     const SizedBox(height: 15),
 
-                    // حقل كتابة العنوان الرئيسي (مثل Shopping List أو Quiz)
+                    // حقل كتابة العنوان الرئيسي
                     TextField(
                       controller: _titleController,
                       style: const TextStyle(
@@ -232,7 +273,20 @@ class _NotesScreenState extends State<NotesScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
-
+                    if (widget.imagePath != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            File(widget.imagePath!),
+                            height: 100,
+                            width: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )
+                    ],
                     // قائمة العناصر المضافة المباشرة
                     ListView.builder(
                       shrinkWrap: true,
@@ -296,7 +350,7 @@ class _NotesScreenState extends State<NotesScreen> {
                       },
                     ),
 
-                    // حقل إدخال عنصر جديد
+                    // حقل إدخال المحتوى أو عنصر جديد
                     Row(
                       children: [
                         Expanded(
@@ -304,7 +358,7 @@ class _NotesScreenState extends State<NotesScreen> {
                             controller: _itemController,
                             style: const TextStyle(color: AppColors.primaryText),
                             decoration: const InputDecoration(
-                              hintText: 'Add new item...',
+                              hintText: 'Type content or add item...',
                               hintStyle: TextStyle(color: AppColors.secondaryText),
                               border: InputBorder.none,
                             ),

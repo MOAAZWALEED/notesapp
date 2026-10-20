@@ -1,5 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes_app/core/app_them_maneger/app_colors.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_bloc.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_event.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_state.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/presentation/pages/notes_screen.dart';
 import 'plus_tap_screen.dart';
 
@@ -11,8 +17,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // 1. قائمة الملاحظات تبدأ فارغة تماماً كما طلبت
-  List<Map<String, dynamic>> notesList = [];
+  @override
+  void initState() {
+    super.initState();
+    // جلب الملاحظات من الفايربيس عند فتح الشاشة
+    BlocProvider.of<NotesBloc>(context).add(FetchNotesEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Helo\n'
-                        'My Notes',
+                    'Helo\nMy Notes',
                     style: TextStyle(
                       color: AppColors.primaryText,
                       fontSize: 40,
@@ -68,118 +77,157 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
 
-              // 2. عرض الكروت ديناميكياً أو إظهار رسالة لو القائمة فارغة
+              // الاستماع لحالة الـ Bloc وعرض القائمة من الفايربيس
               Expanded(
-                child: notesList.isEmpty
-                    ? const Center(
-                  child: Text(
-                    'No notes yet.\nTap + to create one!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.secondaryText,
-                      fontSize: 16,
-                    ),
-                  ),
-                )
-                    : ListView.builder(
-                  itemCount: notesList.length,
-                  itemBuilder: (context, index) {
-                    final note = notesList[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: GestureDetector(
-                        // عند الضغط على الكارت نرسل النوتة الحالية لفتحها وتعديلها
-                        onTap: () async {
-                          final updatedNote = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => NotesScreen(existingNote: note),
+                child: BlocBuilder<NotesBloc, NotesState>(
+                  builder: (context, state) {
+                    if (state is NoteLoadingState) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF8AC53E),
+                        ),
+                      );
+                    } else if (state is NoteSuccessState) {
+                      final notesList = state.notes;
+
+                      if (notesList.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No notes yet.\nTap + to create one!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.secondaryText,
+                              fontSize: 16,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        itemCount: notesList.length,
+                        itemBuilder: (context, index) {
+                          final note = notesList[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 15.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => NotesScreen(
+                                      existingNote: {
+                                        'id': note.id,
+                                        'title': note.title,
+                                        'content': note.content,
+                                        'items': [],
+                                      },
+                                      imagePath: note.imagePath,
+                                    ),
+                                  ),
+                                ).then((_) {
+                                  // تحديث القائمة فور الرجوع من التعديل
+                                  BlocProvider.of<NotesBloc>(context).add(FetchNotesEvent());
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.cardColor,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    if (note.imagePath != null &&
+                                        note.imagePath!.isNotEmpty) ...[
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.file(
+                                          File(note.imagePath!),
+                                          height: 100,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ],
+                                    Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          note.date,
+                                          style: const TextStyle(
+                                            color: AppColors.secondaryText,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        // زر الحذف من الفايربيز وتحديث القائمة فوراً
+                                        GestureDetector(
+                                          onTap: () {
+                                            if (note.id != null) {
+                                              final bloc = BlocProvider.of<NotesBloc>(context);
+                                              bloc.add(DeleteNoteEvent(note.id!));
+                                              bloc.add(FetchNotesEvent());
+                                            }
+                                          },
+                                          child: const Icon(
+                                            Icons.delete_outline,
+                                            color: AppColors.secondaryText,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      note.title,
+                                      style: const TextStyle(
+                                        color: AppColors.primaryText,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    if (note.content.isNotEmpty) ...[
+                                      Text(
+                                        note.content,
+                                        style: const TextStyle(
+                                          color: AppColors.secondaryText,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ),
                           );
-                          // لو تم التعديل والحفظ، نحدث الكارت في مكانه
-                          if (updatedNote != null && updatedNote is Map<String, dynamic>) {
-                            setState(() {
-                              notesList[index] = updatedNote;
-                            });
-                          }
                         },
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppColors.cardColor,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    note['date'] ?? '',
-                                    style: const TextStyle(
-                                      color: AppColors.secondaryText,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  // زر سلة المهملات للحذف
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        notesList.removeAt(index);
-                                      });
-                                    },
-                                    child: const Icon(
-                                      Icons.delete_outline,
-                                      color: AppColors.secondaryText,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                note['title'] ?? '',
-                                style: const TextStyle(
-                                  color: AppColors.primaryText,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
+                      );
+                    } else if (state is NoteErrorState) {
+                      return Center(
+                        child: Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
 
-                              // لو الكارت عبارة عن قائمة Checkboxes
-                              if (note['isChecklist'] == true && note['items'] != null) ...[
-                                Column(
-                                  children: (note['items'] as List)
-                                      .map((item) => _buildCheckBoxItem(
-                                    item['title'],
-                                    item['isDone'],
-                                  ))
-                                      .toList(),
-                                ),
-                              ],
-
-                              const SizedBox(height: 10),
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: Text(
-                                  note['timeAgo'] ?? '',
-                                  style: const TextStyle(
-                                    color: AppColors.secondaryText,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                    return const Center(
+                      child: Text(
+                        'No notes yet.\nTap + to create one!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.secondaryText,
+                          fontSize: 16,
                         ),
                       ),
                     );
                   },
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -207,21 +255,16 @@ class _HomeScreenState extends State<HomeScreen> {
               top: -32,
               right: 6,
               child: GestureDetector(
-                onTap: () async {
-                  // فتح شاشة PlusTab ومنها للملاحظات، وعند الرجوع يتم التقاط النوتة الجديدة
-                  final newNote = await Navigator.push(
+                onTap: () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const PlusTabScreen(),
                     ),
-                  );
-
-                  // لو راجعين بداتا جديدة، نضيفها للقائمة فوراً
-                  if (newNote != null && newNote is Map<String, dynamic>) {
-                    setState(() {
-                      notesList.add(newNote);
-                    });
-                  }
+                  ).then((_) {
+                    // تحديث القائمة فور الرجوع من شاشة الإضافة
+                    BlocProvider.of<NotesBloc>(context).add(FetchNotesEvent());
+                  });
                 },
                 child: Container(
                   width: 80,
@@ -253,30 +296,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCheckBoxItem(String title, bool isDone) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Row(
-        children: [
-          Icon(
-            isDone ? Icons.check_box : Icons.check_box_outline_blank,
-            size: 16,
-            color: isDone ? const Color(0xFF8AC53E) : AppColors.secondaryText,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: TextStyle(
-              color: isDone ? AppColors.primaryText : AppColors.secondaryText,
-              fontSize: 13,
-              decoration: isDone ? TextDecoration.lineThrough : TextDecoration.none,
-            ),
-          ),
-        ],
       ),
     );
   }
