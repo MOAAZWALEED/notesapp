@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (state is NoteLoadingState) {
                       return const Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFF8AC53E),
+                          color: AppColors.greenButton,
                         ),
                       );
                     } else if (state is NoteSuccessState) {
@@ -190,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               padding: const EdgeInsets.only(bottom: 4.0),
                                               child: Row(
                                                 children: [
-                                                  const Icon(Icons.check_box_outlined, color: Color(0xFF8AC53E), size: 18),
+                                                  const Icon(Icons.check_box_outlined, color: AppColors.greenButton, size: 18),
                                                   const SizedBox(width: 8),
                                                   Expanded(
                                                     child: Text(
