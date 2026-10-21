@@ -20,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // جلب الملاحظات من الفايربيس عند فتح الشاشة
     BlocProvider.of<NotesBloc>(context).add(FetchNotesEvent());
   }
 
@@ -38,17 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Helo\nMy Notes',
+                    'Hello\nMy Notes',
                     style: TextStyle(
                       color: AppColors.primaryText,
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                       height: 1.2,
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.tune, color: AppColors.primaryText),
                   ),
                 ],
               ),
@@ -76,8 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // الاستماع لحالة الـ Bloc وعرض القائمة من الفايربيس
               Expanded(
                 child: BlocBuilder<NotesBloc, NotesState>(
                   builder: (context, state) {
@@ -119,13 +112,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                         'id': note.id,
                                         'title': note.title,
                                         'content': note.content,
-                                        'items': [],
                                       },
                                       imagePath: note.imagePath,
                                     ),
                                   ),
                                 ).then((_) {
-                                  // تحديث القائمة فور الرجوع من التعديل
                                   BlocProvider.of<NotesBloc>(context).add(FetchNotesEvent());
                                 });
                               },
@@ -163,7 +154,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                             fontSize: 15,
                                           ),
                                         ),
-                                        // زر الحذف من الفايربيز وتحديث القائمة فوراً
                                         GestureDetector(
                                           onTap: () {
                                             if (note.id != null) {
@@ -191,12 +181,48 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     const SizedBox(height: 10),
                                     if (note.content.isNotEmpty) ...[
-                                      Text(
-                                        note.content,
-                                        style: const TextStyle(
-                                          color: AppColors.secondaryText,
-                                          fontSize: 14,
-                                        ),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: note.content.split('\n').map((line) {
+                                          final trimmed = line.trim();
+                                          if (trimmed.startsWith('[x]') || trimmed.startsWith('[X]')) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(bottom: 4.0),
+                                              child: Row(
+                                                children: [
+                                                  const Icon(Icons.check_box_outlined, color: Color(0xFF8AC53E), size: 18),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      trimmed.substring(3).trim(),
+                                                      style: const TextStyle(color: AppColors.secondaryText, fontSize: 14),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          } else if (trimmed.startsWith('[ ]')) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(bottom: 4.0),
+                                              child: Row(
+                                                children: [
+                                                  const Icon(Icons.check_box_outline_blank, color: AppColors.secondaryText, size: 18),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      trimmed.substring(3).trim(),
+                                                      style: const TextStyle(color: AppColors.secondaryText, fontSize: 14),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }
+                                          return Text(
+                                            line,
+                                            style: const TextStyle(color: AppColors.secondaryText, fontSize: 14),
+                                          );
+                                        }).toList(),
                                       ),
                                     ],
                                   ],
@@ -239,18 +265,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: SizedBox(
-                width: 90,
-                height: 90,
-                child: Icon(
-                  Icons.menu,
-                  color: AppColors.secondaryText,
-                  size: 32,
-                ),
-              ),
-            ),
             Positioned(
               top: -32,
               right: 6,
@@ -262,7 +276,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) => const PlusTabScreen(),
                     ),
                   ).then((_) {
-                    // تحديث القائمة فور الرجوع من شاشة الإضافة
                     BlocProvider.of<NotesBloc>(context).add(FetchNotesEvent());
                   });
                 },

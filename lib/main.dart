@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         addNoteUseCase: addNoteUseCase,
         updateNoteUseCase: updateNoteUseCase,
         deleteNoteUseCase: deleteNoteUseCase,
-      )..add(FetchNotesEvent()), // جلب البيانات فور تشغيل التطبيق وتحديث الشاشة
+      )..add(FetchNotesEvent()),
       child: const MaterialApp(
         debugShowCheckedModeBanner: false,
         initialRoute: AppRoutName.home,

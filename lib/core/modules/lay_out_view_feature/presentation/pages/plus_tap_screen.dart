@@ -44,7 +44,7 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                   width: 350,
                   height: 130,
                   child: const Text(
-                    'What Notes \n Do you Want??',
+                    'What Notes \n Do you Want?',
                     style: TextStyle(
                       color: AppColors.primaryText,
                       fontSize: 40,
@@ -67,22 +67,61 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildOptionItem(icon: Icons.camera_alt_outlined, title: 'Camara', width: 118, height: 26),
+                        _buildOptionItem(
+                          icon: Icons.camera_alt_outlined,
+                          title: 'Camara',
+                          width: 118,
+                          height: 26,
+                          onTap: () {
+                            openCamera();
+                          },
+                        ),
                         _buildDivider(),
-                        _buildOptionItem(icon: Icons.brush_outlined, title: 'Drawing Sketch', width: 189, height: 32),
+                        _buildOptionItem(
+                          icon: Icons.brush_outlined,
+                          title: 'Drawing Sketch',
+                          width: 189,
+                          height: 32,
+                          onTap: () {
+                            // مستقبلًا أكشن الرسم
+                          },
+                        ),
                         _buildDivider(),
-                        _buildOptionItem(icon: Icons.attach_file, title: 'Attach File', width: 141, height: 30),
+                        _buildOptionItem(
+                          icon: Icons.attach_file,
+                          title: 'Attach File',
+                          width: 141,
+                          height: 30,
+                          onTap: () {
+                            // مستقبلًا أكشن إرفاق الملفات
+                          },
+                        ),
                         _buildDivider(),
-                        _buildOptionItem(icon: Icons.mic_none, title: 'Audio File', width: 136, height: 34),
+                        _buildOptionItem(
+                          icon: Icons.mic_none,
+                          title: 'Audio File',
+                          width: 136,
+                          height: 34,
+                          onTap: () {
+                            // مستقبلًا أكشن الصوت
+                          },
+                        ),
                         _buildDivider(),
-                        _buildOptionItem(icon: Icons.lock_outline, title: 'Private Notes', width: 163, height: 25),
+                        _buildOptionItem(
+                          icon: Icons.lock_outline,
+                          title: 'Private Notes',
+                          width: 163,
+                          height: 25,
+                          onTap: () {
+                            // مستقبلًا أكشن الملاحظات السرية
+                          },
+                        ),
 
                         const SizedBox(height: 10),
 
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // زرار Notes
                             GestureDetector(
                               onTap: () async {
                                 final result = await Navigator.push(
@@ -93,7 +132,6 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                                 );
 
                                 if (context.mounted) {
-                                  // نرجع للهوم ونمرر نتيجة الحفظ
                                   Navigator.pop(context, result);
                                 }
                               },
@@ -206,7 +244,13 @@ class PlusTabScreenState extends State<PlusTabScreen> {
     );
   }
 
-  Widget _buildOptionItem({required IconData icon, required String title, required double width, required double height}) {
+  Widget _buildOptionItem({
+    required IconData icon,
+    required String title,
+    required double width,
+    required double height,
+    required VoidCallback onTap,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -231,9 +275,7 @@ class PlusTabScreenState extends State<PlusTabScreen> {
           ],
         ),
         GestureDetector(
-          onTap: () {
-            openCamera();
-          },
+          onTap: onTap,
           child: Container(
             width: 33,
             height: 33,
