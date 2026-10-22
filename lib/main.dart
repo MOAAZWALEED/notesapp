@@ -1,19 +1,21 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:notes_app/core/app_routes/app_rout_name.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/date_layer/datesourse/notes_remote_date_source.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/date_layer/repositoryimp/notes_repository_impl.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/domain/usecases/get_notes_use_case.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_bloc.dart';
+import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_event.dart';
 import 'firebase_options.dart';
 
+import 'package:notes_app/core/Services/notification_service.dart';
+
 import 'package:notes_app/core/app_routes/app_rout_config.dart';
-import 'package:notes_app/core/app_routes/app_rout_name.dart';
 
 import 'package:notes_app/core/modules/lay_out_view_feature/domain/usecases/add_notes_use_case.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/domain/usecases/delete_notes_use_case.dart';
-import 'package:notes_app/core/modules/lay_out_view_feature/domain/usecases/get_notes_use_case.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/domain/usecases/update_note_use_case.dart';
-import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_bloc.dart';
-import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_event.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +23,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // تهيئة خدمة الإشعارات المحلية
+  await NotificationService.init();
 
   runApp(const MyApp());
 }

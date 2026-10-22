@@ -24,6 +24,7 @@ class _NotesScreenState extends State<NotesScreen> {
   final TextEditingController _itemController = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
+  TimeOfDay? _selectedTime;
   List<Map<String, dynamic>> _checklistItems = [];
 
   @override
@@ -32,6 +33,18 @@ class _NotesScreenState extends State<NotesScreen> {
 
     if (widget.existingNote != null) {
       _titleController.text = widget.existingNote!['title'] ?? '';
+
+      if (widget.existingNote!['reminderDateTime'] != null) {
+        if (widget.existingNote!['reminderDateTime'] is DateTime) {
+          final DateTime dt = widget.existingNote!['reminderDateTime'];
+          _selectedDate = dt;
+          _selectedTime = TimeOfDay(hour: dt.hour, minute: dt.minute);
+        } else if (widget.existingNote!['reminderDateTime'] is String) {
+          final DateTime dt = DateTime.parse(widget.existingNote!['reminderDateTime']);
+          _selectedDate = dt;
+          _selectedTime = TimeOfDay(hour: dt.hour, minute: dt.minute);
+        }
+      }
 
       if (widget.existingNote!['content'] != null &&
           widget.existingNote!['content'].toString().isNotEmpty) {
@@ -124,7 +137,33 @@ class _NotesScreenState extends State<NotesScreen> {
     }
   }
 
-  void _saveAndPop() {
+  Future<void> _pickTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF8AC53E),
+              onPrimary: Colors.black,
+              surface: AppColors.cardColor,
+              onSurface: AppColors.primaryText,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
+
+  Future<void> _saveAndPop() async {
     final titleText = _titleController.text.trim();
     final itemInputText = _itemController.text.trim();
 
@@ -151,12 +190,24 @@ class _NotesScreenState extends State<NotesScreen> {
         combinedContent = itemInputText;
       }
 
+      DateTime? reminderDateTime;
+      if (_selectedTime != null) {
+        reminderDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          _selectedTime!.hour,
+          _selectedTime!.minute,
+        );
+      }
+
       final noteEntity = NoteEntity(
         id: noteId,
         title: titleText.isEmpty ? 'New Note' : titleText,
         content: combinedContent,
         date: DateFormat('d MMM').format(_selectedDate),
         imagePath: widget.imagePath ?? (isUpdating ? widget.existingNote!['imagePath'] : null),
+        reminderDateTime: reminderDateTime,
       );
 
       if (isUpdating) {
@@ -223,7 +274,6 @@ class _NotesScreenState extends State<NotesScreen> {
                 ],
               ),
             ),
-
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -231,30 +281,65 @@ class _NotesScreenState extends State<NotesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 10),
-
-                    GestureDetector(
-                      onTap: _pickDate,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            DateFormat('d MMM, yyyy').format(_selectedDate),
-                            style: const TextStyle(
-                              color: AppColors.secondaryText,
-                              fontSize: 14,
-                            ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: _pickDate,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                DateFormat('d MMM, yyyy').format(_selectedDate),
+                                style: const TextStyle(
+                                  color: AppColors.secondaryText,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: AppColors.secondaryText,
+                                size: 16,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.keyboard_arrow_down,
-                            color: AppColors.secondaryText,
-                            size: 16,
+                        ),
+                        const SizedBox(width: 15),
+                        GestureDetector(
+                          onTap: _pickTime,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _selectedTime == null
+                                    ? Icons.notifications_none
+                                    : Icons.notifications_active,
+                                color: _selectedTime == null
+                                    ? AppColors.secondaryText
+                                    : const Color(0xFF8AC53E),
+                                size: 18,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _selectedTime == null
+                                    ? 'Set Alarm'
+                                    : _selectedTime!.format(context),
+                                style: TextStyle(
+                                  color: _selectedTime == null
+                                      ? AppColors.secondaryText
+                                      : const Color(0xFF8AC53E),
+                                  fontSize: 14,
+                                  fontWeight: _selectedTime == null
+                                      ? FontWeight.normal
+                                      : FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 15),
-
                     TextField(
                       controller: _titleController,
                       style: const TextStyle(
@@ -272,7 +357,6 @@ class _NotesScreenState extends State<NotesScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
-
                     if (widget.imagePath != null) ...[
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -290,7 +374,6 @@ class _NotesScreenState extends State<NotesScreen> {
                         ),
                       )
                     ],
-
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -351,7 +434,6 @@ class _NotesScreenState extends State<NotesScreen> {
                         );
                       },
                     ),
-
                     Row(
                       children: [
                         Expanded(

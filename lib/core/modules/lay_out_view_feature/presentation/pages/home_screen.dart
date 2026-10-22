@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:notes_app/core/app_them_maneger/app_colors.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_bloc.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_event.dart';
@@ -112,6 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         'id': note.id,
                                         'title': note.title,
                                         'content': note.content,
+                                        'reminderDateTime': note.reminderDateTime, // تم التمرير هنا
                                       },
                                       imagePath: note.imagePath,
                                     ),
@@ -147,12 +149,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                       mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          note.date,
-                                          style: const TextStyle(
-                                            color: AppColors.secondaryText,
-                                            fontSize: 15,
-                                          ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              note.date,
+                                              style: const TextStyle(
+                                                color: AppColors.secondaryText,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            // عرض التنبيه بره في الهوم لو موجود
+                                            if (note.reminderDateTime != null) ...[
+                                              const SizedBox(width: 12),
+                                              const Icon(
+                                                Icons.notifications_active,
+                                                color: AppColors.greenButton,
+                                                size: 16,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                DateFormat('hh:mm a').format(note.reminderDateTime!),
+                                                style: const TextStyle(
+                                                  color: AppColors.greenButton,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
                                         ),
                                         GestureDetector(
                                           onTap: () {

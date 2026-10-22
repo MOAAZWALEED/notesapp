@@ -7,6 +7,7 @@ class NoteModel extends NoteEntity {
     required super.content,
     super.imagePath,
     required super.date,
+    super.reminderDateTime,
   });
   // التحويل من Firebase لـ NoteModel
   factory NoteModel.fromJson(Map<String, dynamic> json, String id) {
@@ -16,6 +17,9 @@ class NoteModel extends NoteEntity {
       content: json['content'] ?? '',
       imagePath: json['imagePath'],
       date: json['date'] ?? '',
+      reminderDateTime: json['reminderDateTime'] != null
+        ? DateTime.parse(json['reminderDateTime'])
+          : null,
     );
   }
   // التحويل من NoteModel لـ Map عشان نرفعها لـ Firebase
@@ -25,6 +29,7 @@ class NoteModel extends NoteEntity {
       'content': content,
       'imagePath': imagePath,
       'date': date,
+      'reminderDateTime': reminderDateTime?.toIso8601String(),
     };
   }
 }

@@ -4,6 +4,7 @@ class NoteEntity {
   final String content;
   final String? imagePath;
   final String date;
+  final DateTime? reminderDateTime;
 
   NoteEntity({
     this.id,
@@ -11,5 +12,6 @@ class NoteEntity {
     required this.content,
     this.imagePath,
     required this.date,
+    this.reminderDateTime,
   });
 }

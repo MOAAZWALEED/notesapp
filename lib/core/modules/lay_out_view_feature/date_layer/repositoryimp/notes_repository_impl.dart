@@ -22,6 +22,7 @@ class NotesRepositoryImpl implements NotesRepository {
       content: note.content,
       imagePath: note.imagePath,
       date: note.date,
+      reminderDateTime: note.reminderDateTime, // ضفنا الحقل هنا
     );
     await remoteDataSource.addNote(noteModel);
   }
@@ -34,6 +35,7 @@ class NotesRepositoryImpl implements NotesRepository {
       content: note.content,
       imagePath: note.imagePath,
       date: note.date,
+      reminderDateTime: note.reminderDateTime, // وضفناه هنا كمان
     );
     await remoteDataSource.updateNote(noteModel);
   }
