@@ -9,6 +9,15 @@ class NotificationService {
   static Future<void> init() async {
     tz.initializeTimeZones();
 
+    // ضبط التايم زون المحلي صراحة بدلاً من الاعتماد الافتراضي فقط
+    try {
+      final String currentTimeZone = await DateTime.now().timeZoneName;
+      // أو استخدام التايم زون الافتراضي المتاح
+      tz.setLocalLocation(tz.getLocation('Africa/Cairo'));
+    } catch (_) {
+      tz.setLocalLocation(tz.local);
+    }
+
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -22,11 +31,14 @@ class NotificationService {
       onDidReceiveNotificationResponse: (NotificationResponse response) async {},
     );
 
-    // طلب إذن الإشعارات لأجهزة أندرويد 13 فما فوق تلقائياً عند التهيئة
-    await flutterLocalNotificationsPlugin
+    final androidPlugin = flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+        AndroidFlutterLocalNotificationsPlugin>();
+
+    await androidPlugin?.requestNotificationsPermission();
+
+    // طلب إذن الـ Exact Alarm لأجهزة أندرويد 12+ (Android 12+)
+    await androidPlugin?.requestExactAlarmsPermission();
   }
 
   static Future<void> scheduleNotification({
@@ -35,14 +47,11 @@ class NotificationService {
     required String body,
     required DateTime scheduledDate,
   }) async {
-    // التأكد من أن وقت التنبيه ليس في الماضي
     if (scheduledDate.isBefore(DateTime.now())) return;
 
-    // تحويل الوقت بشكل دقيق للتايم زون المحلي
     final tz.TZDateTime scheduledTZDate =
     tz.TZDateTime.from(scheduledDate, tz.local);
 
-    // ضمان أن الـ ID دائماً رقم موجب حتى لا يفشل الإشعار
     final int safeId = id.abs();
 
     await flutterLocalNotificationsPlugin.zonedSchedule(
