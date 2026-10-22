@@ -33,7 +33,6 @@ class _NotesScreenState extends State<NotesScreen> {
     if (widget.existingNote != null) {
       _titleController.text = widget.existingNote!['title'] ?? '';
 
-      // قراءة الـ content وتقسيمه لعناصر قائمة مع الحفاظ على حالة المربع القديمة [x] أو [ ]
       if (widget.existingNote!['content'] != null &&
           widget.existingNote!['content'].toString().isNotEmpty) {
         final String rawContent = widget.existingNote!['content'];
@@ -52,7 +51,6 @@ class _NotesScreenState extends State<NotesScreen> {
               'isDone': false,
             });
           } else if (trimmed.isNotEmpty) {
-            // لو سطر نصي عادي قديم مش معمول له مربعات
             _checklistItems.add({
               'title': trimmed,
               'isDone': false,
@@ -70,7 +68,6 @@ class _NotesScreenState extends State<NotesScreen> {
     super.dispose();
   }
 
-  // دالة لفتح الصورة بحجم الشاشة والقدرة على عمل Zoom
   void _showFullImage(BuildContext context, String imagePath) {
     showDialog(
       context: context,
@@ -131,7 +128,6 @@ class _NotesScreenState extends State<NotesScreen> {
     final titleText = _titleController.text.trim();
     final itemInputText = _itemController.text.trim();
 
-    // لو المستخدم كتب حاجة في حقل الإضافة وما ضغطش على علامة +، نضيفها تلقائياً قبل الحفظ
     if (itemInputText.isNotEmpty) {
       _checklistItems.add({
         'title': itemInputText,
@@ -146,7 +142,6 @@ class _NotesScreenState extends State<NotesScreen> {
           ? widget.existingNote!['id']
           : DateTime.now().millisecondsSinceEpoch.toString();
 
-      // دمج العناصر مع علامات المربعات [x] و [ ] عشان الهوم والـ NotesScreen يقروها صح
       String combinedContent = "";
       if (_checklistItems.isNotEmpty) {
         combinedContent = _checklistItems
@@ -204,57 +199,26 @@ class _NotesScreenState extends State<NotesScreen> {
                       ),
                     ),
                   ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: _saveAndPop,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8AC53E),
-                            borderRadius: BorderRadius.circular(12),
+                  GestureDetector(
+                    onTap: _saveAndPop,
+                    child: Container(
+                      width: 55,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8AC53E),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
-                          child: const Text(
-                            'Save',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
                         ),
                       ),
-                      const SizedBox(width: 15),
-                      const SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: Icon(
-                          Icons.person_add_outlined,
-                          color: AppColors.secondaryText,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: Icon(
-                          Icons.home_outlined,
-                          color: AppColors.secondaryText,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: Icon(
-                          Icons.more_vert,
-                          color: AppColors.secondaryText,
-                          size: 24,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -424,7 +388,7 @@ class _NotesScreenState extends State<NotesScreen> {
                               });
                             }
                           },
-                          icon: const Icon(Icons.add, color: AppColors.greenButton),
+                          icon: const Icon(Icons.add, color: Color(0xFF8AC53E)),
                         ),
                       ],
                     ),

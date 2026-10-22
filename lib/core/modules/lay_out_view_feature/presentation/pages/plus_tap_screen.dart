@@ -119,84 +119,42 @@ class PlusTabScreenState extends State<PlusTabScreen> {
 
                         const SizedBox(height: 10),
 
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const NotesScreen(),
-                                  ),
-                                );
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NotesScreen(),
+                              ),
+                            );
 
-                                if (context.mounted) {
-                                  Navigator.pop(context, result);
-                                }
-                              },
-                              child: Container(
-                                width: 153,
-                                height: 62,
-                                decoration: BoxDecoration(
-                                  color: AppColors.greenButton,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.note_alt_outlined, color: Colors.black, size: 22),
-                                    const SizedBox(width: 8),
-                                    SizedBox(
-                                      width: 87,
-                                      height: 26,
-                                      child: const Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          'Notes',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            if (context.mounted) {
+                              Navigator.pop(context, result);
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: 62,
+                            decoration: BoxDecoration(
+                              color: AppColors.greenButton,
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            Container(
-                              width: 154,
-                              height: 62,
-                              decoration: BoxDecoration(
-                                color: AppColors.purpleButton,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.task_alt, color: Colors.black, size: 22),
-                                  const SizedBox(width: 8),
-                                  SizedBox(
-                                    width: 78,
-                                    height: 20,
-                                    child: const Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        'Task',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.note_alt_outlined, color: Colors.black, size: 22),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Notes',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
