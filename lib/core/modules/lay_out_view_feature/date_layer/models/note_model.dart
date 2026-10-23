@@ -7,6 +7,7 @@ class NoteModel extends NoteEntity {
     required super.content,
     super.imagePath,
     required super.date,
+    super.filePath,
     super.reminderDateTime,
   });
   // التحويل من Firebase لـ NoteModel
@@ -17,6 +18,7 @@ class NoteModel extends NoteEntity {
       content: json['content'] ?? '',
       imagePath: json['imagePath'],
       date: json['date'] ?? '',
+      filePath: json['filePath'],
       reminderDateTime: json['reminderDateTime'] != null
         ? DateTime.parse(json['reminderDateTime'])
           : null,
@@ -29,6 +31,7 @@ class NoteModel extends NoteEntity {
       'content': content,
       'imagePath': imagePath,
       'date': date,
+      'filePath': filePath,
       'reminderDateTime': reminderDateTime?.toIso8601String(),
     };
   }

@@ -41,6 +41,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   flutter_local_notifications: ^17.2.4
   timezone: ^0.9.4
+  file_picker: ^10.3.3
 
 dev_dependencies:
   flutter_test:

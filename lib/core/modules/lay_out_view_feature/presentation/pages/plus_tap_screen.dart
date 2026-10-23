@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:notes_app/core/app_them_maneger/app_colors.dart';
@@ -22,8 +23,27 @@ class PlusTabScreenState extends State<PlusTabScreen> {
           builder: (context) => NotesScreen(imagePath: image.path),
         ),
       );
-      if (context.mounted) {
+      if (mounted) {
         Navigator.pop(context, result);
+      }
+    }
+  }
+
+  Future<void> pickFile() async {
+    final FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null && result.files.single.path != null) {
+      final String selectedFilePath = result.files.single.path!;
+
+      final resultNote = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => NotesScreen(filePath: selectedFilePath),
+        ),
+      );
+
+      if (mounted) {
+        Navigator.pop(context, resultNote);
       }
     }
   }
@@ -72,19 +92,7 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                           title: 'Camara',
                           width: 118,
                           height: 26,
-                          onTap: () {
-                            openCamera();
-                          },
-                        ),
-                        _buildDivider(),
-                        _buildOptionItem(
-                          icon: Icons.brush_outlined,
-                          title: 'Drawing Sketch',
-                          width: 189,
-                          height: 32,
-                          onTap: () {
-                            // مستقبلًا أكشن الرسم
-                          },
+                          onTap: openCamera,
                         ),
                         _buildDivider(),
                         _buildOptionItem(
@@ -92,9 +100,7 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                           title: 'Attach File',
                           width: 141,
                           height: 30,
-                          onTap: () {
-                            // مستقبلًا أكشن إرفاق الملفات
-                          },
+                          onTap: pickFile,
                         ),
                         _buildDivider(),
                         _buildOptionItem(
@@ -102,9 +108,7 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                           title: 'Audio File',
                           width: 136,
                           height: 34,
-                          onTap: () {
-                            // مستقبلًا أكشن الصوت
-                          },
+                          onTap: () {},
                         ),
                         _buildDivider(),
                         _buildOptionItem(
@@ -112,9 +116,7 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                           title: 'Private Notes',
                           width: 163,
                           height: 25,
-                          onTap: () {
-                            // مستقبلًا أكشن الملاحظات السرية
-                          },
+                          onTap: () {},
                         ),
 
                         const SizedBox(height: 10),
@@ -128,7 +130,7 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                               ),
                             );
 
-                            if (context.mounted) {
+                            if (mounted) {
                               Navigator.pop(context, result);
                             }
                           },
@@ -209,46 +211,50 @@ class PlusTabScreenState extends State<PlusTabScreen> {
     required double height,
     required VoidCallback onTap,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(icon, color: AppColors.secondaryText, size: 24),
-            const SizedBox(width: 15),
-            SizedBox(
-              width: width,
-              height: height,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.primaryText,
-                    fontSize: 16,
+            Row(
+              children: [
+                Icon(icon, color: AppColors.secondaryText, size: 24),
+                const SizedBox(width: 15),
+                SizedBox(
+                  width: width,
+                  height: height,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        color: AppColors.primaryText,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
+              ],
+            ),
+            Container(
+              width: 33,
+              height: 33,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios,
+                color: AppColors.secondaryText,
+                size: 14,
               ),
             ),
           ],
         ),
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: 33,
-            height: 33,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.arrow_forward_ios,
-              color: AppColors.secondaryText,
-              size: 14,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

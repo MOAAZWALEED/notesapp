@@ -113,9 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                         'id': note.id,
                                         'title': note.title,
                                         'content': note.content,
-                                        'reminderDateTime': note.reminderDateTime, // تم التمرير هنا
+                                        'reminderDateTime': note.reminderDateTime,
+                                        'imagePath': note.imagePath,
+                                        'filePath': note.filePath,
                                       },
                                       imagePath: note.imagePath,
+                                      filePath: note.filePath,
                                     ),
                                   ),
                                 ).then((_) {
@@ -145,6 +148,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                       const SizedBox(height: 10),
                                     ],
+                                    if (note.filePath != null &&
+                                        note.filePath!.isNotEmpty) ...[
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.05),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.attach_file,
+                                              color: AppColors.greenButton,
+                                              size: 18,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                note.filePath!.split('/').last,
+                                                style: const TextStyle(
+                                                  color: AppColors.secondaryText,
+                                                  fontSize: 13,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ],
                                     Row(
                                       mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -158,7 +193,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 fontSize: 15,
                                               ),
                                             ),
-                                            // عرض التنبيه بره في الهوم لو موجود
                                             if (note.reminderDateTime != null) ...[
                                               const SizedBox(width: 12),
                                               const Icon(

@@ -12,8 +12,14 @@ import '../../domain/entity/note_entity.dart';
 class NotesScreen extends StatefulWidget {
   final Map<String, dynamic>? existingNote;
   final String? imagePath;
+  final String? filePath;
 
-  const NotesScreen({super.key, this.existingNote, this.imagePath});
+  const NotesScreen({
+    super.key,
+    this.existingNote,
+    this.imagePath,
+    this.filePath,
+  });
 
   @override
   State<NotesScreen> createState() => _NotesScreenState();
@@ -25,7 +31,7 @@ class _NotesScreenState extends State<NotesScreen> {
 
   DateTime _selectedDate = DateTime.now();
   TimeOfDay? _selectedTime;
-  List<Map<String, dynamic>> _checklistItems = [];
+  final List<Map<String, dynamic>> _checklistItems = [];
 
   @override
   void initState() {
@@ -207,6 +213,7 @@ class _NotesScreenState extends State<NotesScreen> {
         content: combinedContent,
         date: DateFormat('d MMM').format(_selectedDate),
         imagePath: widget.imagePath ?? (isUpdating ? widget.existingNote!['imagePath'] : null),
+        filePath: widget.filePath ?? (isUpdating ? widget.existingNote!['filePath'] : null),
         reminderDateTime: reminderDateTime,
       );
 
@@ -228,6 +235,11 @@ class _NotesScreenState extends State<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveImagePath =
+        widget.imagePath ?? widget.existingNote?['imagePath'];
+    final effectiveFilePath =
+        widget.filePath ?? widget.existingNote?['filePath'];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -357,22 +369,53 @@ class _NotesScreenState extends State<NotesScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    if (widget.imagePath != null) ...[
+                    if (effectiveImagePath != null) ...[
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: GestureDetector(
-                          onTap: () => _showFullImage(context, widget.imagePath!),
+                          onTap: () => _showFullImage(context, effectiveImagePath),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Image.file(
-                              File(widget.imagePath!),
+                              File(effectiveImagePath),
                               height: 100,
                               width: 100,
                               fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                      )
+                      ),
+                    ],
+                    if (effectiveFilePath != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.insert_drive_file,
+                                color: Color(0xFF8AC53E),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  effectiveFilePath.split('/').last,
+                                  style: const TextStyle(
+                                    color: AppColors.primaryText,
+                                    fontSize: 14,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                     ListView.builder(
                       shrinkWrap: true,
