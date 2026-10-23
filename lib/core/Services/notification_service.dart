@@ -54,10 +54,14 @@ class NotificationService {
 
     final int safeId = id.abs();
 
+    final String cleanBody = body
+        .replaceAll(RegExp(r'\[\s*\]|\[[xX]\]'), '')
+        .trim();
+
     await flutterLocalNotificationsPlugin.zonedSchedule(
       safeId,
       title,
-      body,
+      cleanBody, // استبدال الـ body بالنص المنظف
       scheduledTZDate,
       const NotificationDetails(
         android: AndroidNotificationDetails(
