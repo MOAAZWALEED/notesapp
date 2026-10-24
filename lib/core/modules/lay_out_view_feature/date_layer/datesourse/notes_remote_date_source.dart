@@ -6,6 +6,8 @@ abstract class NotesRemoteDataSource {
   Future<void> addNote(NoteModel note);
   Future<void> updateNote(NoteModel note);
   Future<void> deleteNote(String id);
+  Future<bool> verifyPassword({required String noteId, required String password});
+  Future<void> updatePassword({required String noteId, required String oldPassword, required String newPassword});
 }
 
 class NotesRemoteDataSourceImpl implements NotesRemoteDataSource {
@@ -39,5 +41,27 @@ class NotesRemoteDataSourceImpl implements NotesRemoteDataSource {
   @override
   Future<void> deleteNote(String id) async {
     await firestore.collection('notes').doc(id).delete();
+  }
+
+  @override
+  Future<bool> verifyPassword({required String noteId, required String password}) async {
+    final doc = await firestore.collection('notes').doc(noteId).get();
+    if (doc.exists) {
+      final noteData = doc.data();
+      return noteData?['password'] == password;
+    }
+    return false;
+  }
+
+  @override
+  Future<void> updatePassword({required String noteId, required String oldPassword, required String newPassword}) async {
+    final isCorrect = await verifyPassword(noteId: noteId, password: oldPassword);
+    if (isCorrect) {
+      await firestore.collection('notes').doc(noteId).update({
+        'password': newPassword,
+      });
+    } else {
+      throw Exception('The old password you entered is incorrect');
+    }
   }
 }

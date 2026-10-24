@@ -65,12 +65,13 @@ class NotificationService {
       scheduledTZDate,
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'notes_reminder_channel_id',
-          'Notes Reminders',
-          channelDescription: 'Channel for notes reminders',
+          'notes_custom_sound_channel', // اسم جديد للقناة لتطبيق الصوت المخصص
+          'Notes Reminders Custom Sound',
+          channelDescription: 'Channel for notes reminders with custom alert sound',
           importance: Importance.max,
           priority: Priority.high,
           playSound: true,
+          sound: RawResourceAndroidNotificationSound('custom_sound'), // ملف الصوت المخصص
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

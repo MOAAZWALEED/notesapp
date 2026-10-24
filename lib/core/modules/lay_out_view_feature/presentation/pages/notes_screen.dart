@@ -13,12 +13,14 @@ class NotesScreen extends StatefulWidget {
   final Map<String, dynamic>? existingNote;
   final String? imagePath;
   final String? filePath;
+  final bool isPrivate;
 
   const NotesScreen({
     super.key,
     this.existingNote,
     this.imagePath,
     this.filePath,
+    this.isPrivate = false,
   });
 
   @override
@@ -28,17 +30,22 @@ class NotesScreen extends StatefulWidget {
 class _NotesScreenState extends State<NotesScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _itemController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
   TimeOfDay? _selectedTime;
   final List<Map<String, dynamic>> _checklistItems = [];
+  bool _isNotePrivate = false;
 
   @override
   void initState() {
     super.initState();
 
+    _isNotePrivate = widget.isPrivate || (widget.existingNote?['isPrivate'] ?? false);
+
     if (widget.existingNote != null) {
       _titleController.text = widget.existingNote!['title'] ?? '';
+      _passwordController.text = widget.existingNote!['password'] ?? '';
 
       if (widget.existingNote!['reminderDateTime'] != null) {
         if (widget.existingNote!['reminderDateTime'] is DateTime) {
@@ -84,6 +91,7 @@ class _NotesScreenState extends State<NotesScreen> {
   void dispose() {
     _titleController.dispose();
     _itemController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -172,6 +180,17 @@ class _NotesScreenState extends State<NotesScreen> {
   Future<void> _saveAndPop() async {
     final titleText = _titleController.text.trim();
     final itemInputText = _itemController.text.trim();
+    final passwordText = _passwordController.text.trim();
+
+    if (_isNotePrivate && passwordText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a password for this private note.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
 
     if (itemInputText.isNotEmpty) {
       _checklistItems.add({
@@ -215,6 +234,8 @@ class _NotesScreenState extends State<NotesScreen> {
         imagePath: widget.imagePath ?? (isUpdating ? widget.existingNote!['imagePath'] : null),
         filePath: widget.filePath ?? (isUpdating ? widget.existingNote!['filePath'] : null),
         reminderDateTime: reminderDateTime,
+        isPrivate: _isNotePrivate,
+        password: _isNotePrivate ? passwordText : null,
       );
 
       if (isUpdating) {
@@ -352,6 +373,35 @@ class _NotesScreenState extends State<NotesScreen> {
                       ],
                     ),
                     const SizedBox(height: 15),
+                    if (_isNotePrivate) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF8AC53E)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.lock, color: Color(0xFF8AC53E), size: 20),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: TextField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                style: const TextStyle(color: AppColors.primaryText),
+                                decoration: const InputDecoration(
+                                  hintText: 'Enter Password for Private Note...',
+                                  hintStyle: TextStyle(color: AppColors.secondaryText, fontSize: 14),
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                    ],
                     TextField(
                       controller: _titleController,
                       style: const TextStyle(

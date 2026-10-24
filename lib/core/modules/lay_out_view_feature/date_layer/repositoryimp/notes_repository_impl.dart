@@ -22,7 +22,9 @@ class NotesRepositoryImpl implements NotesRepository {
       content: note.content,
       imagePath: note.imagePath,
       date: note.date,
-      reminderDateTime: note.reminderDateTime, // ضفنا الحقل هنا
+      isPrivate: note.isPrivate,
+      password: note.password,
+      reminderDateTime: note.reminderDateTime,
     );
     await remoteDataSource.addNote(noteModel);
   }
@@ -35,7 +37,9 @@ class NotesRepositoryImpl implements NotesRepository {
       content: note.content,
       imagePath: note.imagePath,
       date: note.date,
-      reminderDateTime: note.reminderDateTime, // وضفناه هنا كمان
+      isPrivate: note.isPrivate,
+      password: note.password,
+      reminderDateTime: note.reminderDateTime,
     );
     await remoteDataSource.updateNote(noteModel);
   }
@@ -43,5 +47,15 @@ class NotesRepositoryImpl implements NotesRepository {
   @override
   Future<void> deleteNote(String id) async {
     await remoteDataSource.deleteNote(id);
+  }
+
+  @override
+  Future<bool> verifyPassword({required String noteId, required String password}) async {
+    return await remoteDataSource.verifyPassword(noteId: noteId, password: password);
+  }
+
+  @override
+  Future<void> updatePassword({required String noteId, required String oldPassword, required String newPassword}) async {
+    return await remoteDataSource.updatePassword(noteId: noteId, oldPassword: oldPassword, newPassword: newPassword);
   }
 }

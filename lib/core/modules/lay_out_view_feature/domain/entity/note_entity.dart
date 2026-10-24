@@ -6,6 +6,8 @@ class NoteEntity {
   final String date;
   final DateTime? reminderDateTime;
   final String? filePath;
+  final bool isPrivate;
+  final String? password;
 
   NoteEntity({
     this.id,
@@ -15,5 +17,7 @@ class NoteEntity {
     required this.date,
     this.reminderDateTime,
     this.filePath,
+    this.isPrivate = false,
+    this.password,
   });
 }

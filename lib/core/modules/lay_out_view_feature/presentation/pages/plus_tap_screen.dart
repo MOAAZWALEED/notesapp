@@ -116,7 +116,17 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                           title: 'Private Notes',
                           width: 163,
                           height: 25,
-                          onTap: () {},
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NotesScreen(isPrivate: true),
+                              ),
+                            );
+                            if (mounted) {
+                              Navigator.pop(context, result);
+                            }
+                          },
                         ),
 
                         const SizedBox(height: 10),
