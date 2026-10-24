@@ -242,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                       // قائمة الـ 3 نقط بخيارات التعديل والحذف
                                       PopupMenuButton<String>(
-                                        icon: const Icon(Icons.more_vert, color: AppColors.secondaryText, size: 18),
+                                        icon: const Icon(Icons.more_vert, color: AppColors.secondaryText, size: 20),
                                         color: AppColors.cardColor,
                                         onSelected: (value) {
                                           if (value == 'edit') {
