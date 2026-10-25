@@ -26,7 +26,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // تهيئة خدمة الإشعارات المحلية
   await NotificationService.init();
 
   runApp(const MyApp());
@@ -37,6 +36,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     // 1. إنشاء الـ DataSource والـ Repository
     final dataSource = NotesRemoteDataSourceImpl();
     final repository = NotesRepositoryImpl(remoteDataSource: dataSource);
