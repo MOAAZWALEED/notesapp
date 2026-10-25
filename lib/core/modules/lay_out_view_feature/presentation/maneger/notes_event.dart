@@ -19,7 +19,6 @@ class DeleteNoteEvent extends NotesEvent {
   DeleteNoteEvent(this.id);
 }
 
-// الإيفنتات الجديدة الخاصة بكلمة المرور
 class VerifyNotePasswordEvent extends NotesEvent {
   final String noteId;
   final String password;

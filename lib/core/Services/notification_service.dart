@@ -9,10 +9,8 @@ class NotificationService {
   static Future<void> init() async {
     tz.initializeTimeZones();
 
-    // ضبط التايم زون المحلي صراحة بدلاً من الاعتماد الافتراضي فقط
     try {
       final String currentTimeZone = await DateTime.now().timeZoneName;
-      // أو استخدام التايم زون الافتراضي المتاح
       tz.setLocalLocation(tz.getLocation('Africa/Cairo'));
     } catch (_) {
       tz.setLocalLocation(tz.local);
@@ -37,7 +35,7 @@ class NotificationService {
 
     await androidPlugin?.requestNotificationsPermission();
 
-    // طلب إذن الـ Exact Alarm لأجهزة أندرويد 12+ (Android 12+)
+    // **طلب إذن الـ Exact Alarm لأجهزة أندرويد 12+ (Android 12+)**
     await androidPlugin?.requestExactAlarmsPermission();
   }
 
@@ -61,17 +59,17 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.zonedSchedule(
       safeId,
       title,
-      cleanBody, // استبدال الـ body بالنص المنظف
+      cleanBody,
       scheduledTZDate,
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'notes_custom_sound_channel', // اسم جديد للقناة لتطبيق الصوت المخصص
+          'notes_custom_sound_channel',
           'Notes Reminders Custom Sound',
           channelDescription: 'Channel for notes reminders with custom alert sound',
           importance: Importance.max,
           priority: Priority.high,
           playSound: true,
-          sound: RawResourceAndroidNotificationSound('custom_sound'), // ملف الصوت المخصص
+          sound: RawResourceAndroidNotificationSound('custom_sound'),
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

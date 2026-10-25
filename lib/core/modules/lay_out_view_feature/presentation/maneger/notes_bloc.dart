@@ -14,16 +14,16 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
   final AddNotesUseCase addNoteUseCase;
   final UpdateNoteUseCase updateNoteUseCase;
   final DeleteNotesUseCase deleteNoteUseCase;
-  final Verifypasswordusecase verifyPasswordUseCase; // متغير التحقق
-  final updatepasswordusecase updatePasswordUseCase; // متغير التحديث
+  final Verifypasswordusecase verifyPasswordUseCase;
+  final updatepasswordusecase updatePasswordUseCase;
 
   NotesBloc({
     required this.getNotesUseCase,
     required this.addNoteUseCase,
     required this.updateNoteUseCase,
     required this.deleteNoteUseCase,
-    required this.verifyPasswordUseCase, // تمريرها في الكونستركتور
-    required this.updatePasswordUseCase, // تمريرها في الكونستركتور
+    required this.verifyPasswordUseCase,
+    required this.updatePasswordUseCase,
   }) : super(NoteInitialState()) {
 
     on<FetchNotesEvent>((event, emit) async {
@@ -40,7 +40,6 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
       try {
         await addNoteUseCase(event.note);
 
-        // جدولة الإشعار مع إخفاء بيانات النوتة لو كانت Private
         if (event.note.reminderDateTime != null) {
           final title = event.note.isPrivate ? 'Private Note 🔒' : event.note.title;
           final body = event.note.isPrivate
@@ -70,7 +69,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
         if (event.note.reminderDateTime != null) {
           final title = event.note.isPrivate ? 'Private Note 🔒' : event.note.title;
           final body = event.note.isPrivate
-              ? 'You have a scheduled reminder for a secure note.'
+              ? 'Locked note reminder.'
               : event.note.content;
 
           await NotificationService.scheduleNotification(
@@ -94,7 +93,6 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
       try {
         await deleteNoteUseCase(event.id);
 
-        // إلغاء الإشعار عند حذف النوتة
         await NotificationService.cancelNotification(event.id.hashCode);
 
         final notes = await getNotesUseCase();

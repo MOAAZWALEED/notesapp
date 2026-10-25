@@ -17,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // حفظ النوتات محلياً لمنع اختفائها أثناء عمليات التحقق
+
   List<NoteEntity> _cachedNotes = [];
 
   @override
@@ -240,7 +240,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                           fontSize: 13,
                                         ),
                                       ),
-                                      // قائمة الـ 3 نقط بخيارات التعديل والحذف
                                       PopupMenuButton<String>(
                                         icon: const Icon(Icons.more_vert, color: AppColors.secondaryText, size: 20),
                                         color: AppColors.cardColor,

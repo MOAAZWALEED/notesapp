@@ -16,7 +16,6 @@ class NoteErrorState extends NotesState {
   NoteErrorState(this.message);
 }
 
-// حالات التحقق من كلمة المرور الجديدة
 class VerifyPasswordLoadingState extends NotesState {}
 
 class VerifyPasswordSuccessState extends NotesState {
@@ -29,7 +28,6 @@ class VerifyPasswordFailureState extends NotesState {
   VerifyPasswordFailureState(this.errorMessage);
 }
 
-// حالات تحديث كلمة المرور الجديدة
 class UpdatePasswordLoadingState extends NotesState {}
 
 class UpdatePasswordSuccessState extends NotesState {}

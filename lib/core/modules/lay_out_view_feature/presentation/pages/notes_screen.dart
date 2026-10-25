@@ -563,7 +563,7 @@ class _NotesScreenState extends State<NotesScreen> {
                               });
                             }
                           },
-                          icon: const Icon(Icons.add, color: Color(0xFF8AC53E)),
+                          icon: const Icon(Icons.add, color: AppColors.greenButton),
                         ),
                       ],
                     ),
