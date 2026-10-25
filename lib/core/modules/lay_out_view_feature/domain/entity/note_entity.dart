@@ -6,6 +6,7 @@ class NoteEntity {
   final String date;
   final DateTime? reminderDateTime;
   final String? filePath;
+  final String? audioPath;
   final bool isPrivate;
   final String? password;
 
@@ -17,6 +18,7 @@ class NoteEntity {
     required this.date,
     this.reminderDateTime,
     this.filePath,
+    this.audioPath,
     this.isPrivate = false,
     this.password,
   });

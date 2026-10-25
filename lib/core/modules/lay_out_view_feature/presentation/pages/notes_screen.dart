@@ -13,6 +13,7 @@ class NotesScreen extends StatefulWidget {
   final Map<String, dynamic>? existingNote;
   final String? imagePath;
   final String? filePath;
+  final String? audioPath;
   final bool isPrivate;
 
   const NotesScreen({
@@ -20,6 +21,7 @@ class NotesScreen extends StatefulWidget {
     this.existingNote,
     this.imagePath,
     this.filePath,
+    this.audioPath,
     this.isPrivate = false,
   });
 
@@ -104,10 +106,14 @@ class _NotesScreenState extends State<NotesScreen> {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            InteractiveViewer(
-              child: Image.file(
-                File(imagePath),
-                fit: BoxFit.contain,
+            SizedBox.expand(
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Image.file(
+                  File(imagePath),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             Positioned(
@@ -233,6 +239,7 @@ class _NotesScreenState extends State<NotesScreen> {
         date: DateFormat('d MMM').format(_selectedDate),
         imagePath: widget.imagePath ?? (isUpdating ? widget.existingNote!['imagePath'] : null),
         filePath: widget.filePath ?? (isUpdating ? widget.existingNote!['filePath'] : null),
+        audioPath: widget.audioPath ?? (isUpdating ? widget.existingNote!['audioPath'] : null),
         reminderDateTime: reminderDateTime,
         isPrivate: _isNotePrivate,
         password: _isNotePrivate ? passwordText : null,
@@ -260,6 +267,8 @@ class _NotesScreenState extends State<NotesScreen> {
         widget.imagePath ?? widget.existingNote?['imagePath'];
     final effectiveFilePath =
         widget.filePath ?? widget.existingNote?['filePath'];
+    final effectiveAudioPath =
+        widget.audioPath ?? widget.existingNote?['audioPath'];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -455,6 +464,37 @@ class _NotesScreenState extends State<NotesScreen> {
                               Expanded(
                                 child: Text(
                                   effectiveFilePath.split('/').last,
+                                  style: const TextStyle(
+                                    color: AppColors.primaryText,
+                                    fontSize: 14,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (effectiveAudioPath != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.mic,
+                                color: Color(0xFF8AC53E),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  effectiveAudioPath.split('/').last,
                                   style: const TextStyle(
                                     color: AppColors.primaryText,
                                     fontSize: 14,

@@ -48,6 +48,27 @@ class PlusTabScreenState extends State<PlusTabScreen> {
     }
   }
 
+  Future<void> pickAudioFile() async {
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+    );
+
+    if (result != null && result.files.single.path != null) {
+      final String selectedAudioPath = result.files.single.path!;
+
+      final resultNote = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => NotesScreen(audioPath: selectedAudioPath),
+        ),
+      );
+
+      if (mounted) {
+        Navigator.pop(context, resultNote);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,7 +129,7 @@ class PlusTabScreenState extends State<PlusTabScreen> {
                           title: 'Audio File',
                           width: 136,
                           height: 34,
-                          onTap: () {},
+                          onTap: pickAudioFile,
                         ),
                         _buildDivider(),
                         _buildOptionItem(

@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:notes_app/core/app_them_maneger/app_colors.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/domain/entity/note_entity.dart';
 import 'package:notes_app/core/modules/lay_out_view_feature/presentation/maneger/notes_bloc.dart';
@@ -18,11 +20,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
 
   List<NoteEntity> _cachedNotes = [];
+  final Set<String> _unlockedNotesIds = {};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     BlocProvider.of<NotesBloc>(context).add(FetchNotesEvent());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _showPasswordDialog(BuildContext context, String noteId, VoidCallback onSuccess) {
@@ -101,10 +112,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Hello,\nMy Notes',
                     style: TextStyle(
                       color: AppColors.primaryText,
@@ -124,9 +135,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: AppColors.cardColor,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const TextField(
-                    style: TextStyle(color: AppColors.primaryText),
-                    decoration: InputDecoration(
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value.trim();
+                      });
+                    },
+                    style: const TextStyle(color: AppColors.primaryText),
+                    decoration: const InputDecoration(
                       icon: Icon(
                         Icons.search,
                         color: AppColors.secondaryText,
@@ -159,7 +176,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }
 
-                    final notesList = _cachedNotes;
+                    final notesList = _cachedNotes.where((note) {
+                      final query = _searchQuery.toLowerCase();
+                      final titleLower = note.title.toLowerCase();
+                      final contentLower = note.content.toLowerCase();
+                      return titleLower.contains(query) || contentLower.contains(query);
+                    }).toList();
 
                     if (notesList.isEmpty) {
                       return const Center(
@@ -178,6 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: notesList.length,
                       itemBuilder: (context, index) {
                         final note = notesList[index];
+                        final bool isUnlockedInHome = note.id != null && _unlockedNotesIds.contains(note.id);
 
                         void openNoteScreen() {
                           Navigator.push(
@@ -191,11 +214,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   'reminderDateTime': note.reminderDateTime,
                                   'imagePath': note.imagePath,
                                   'filePath': note.filePath,
+                                  'audioPath': note.audioPath,
                                   'isPrivate': note.isPrivate,
                                   'password': note.password,
                                 },
                                 imagePath: note.imagePath,
                                 filePath: note.filePath,
+                                audioPath: note.audioPath,
                                 isPrivate: note.isPrivate,
                               ),
                             ),
@@ -208,14 +233,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.only(bottom: 15.0),
                           child: GestureDetector(
                             onTap: () {
-                              if (note.isPrivate && note.id != null) {
-                                _showPasswordDialog(context, note.id!, openNoteScreen);
+                              if (note.isPrivate && note.id != null && !isUnlockedInHome) {
+                                _showPasswordDialog(context, note.id!, () {
+                                  setState(() {
+                                    _unlockedNotesIds.add(note.id!);
+                                  });
+                                });
                               } else {
                                 openNoteScreen();
                               }
                             },
                             child: Container(
-                              height: note.isPrivate ? 140 : null,
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: AppColors.cardColor,
@@ -223,25 +251,54 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        note.date,
-                                        style: const TextStyle(
-                                          color: AppColors.secondaryText,
-                                          fontSize: 13,
-                                        ),
+                                      // عرض التاريخ والوقت والتنبيه بنفس المقاسات القديمة تماماً
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            note.reminderDateTime != null
+                                                ? DateFormat('d MMM, yyyy').format(note.reminderDateTime!)
+                                                : note.date,
+                                            style: const TextStyle(
+                                              color: AppColors.secondaryText,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                          if (note.reminderDateTime != null) ...[
+                                            const SizedBox(width: 10),
+                                            const Icon(
+                                              Icons.notifications_active,
+                                              color: Color(0xFF8AC53E),
+                                              size: 16,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              DateFormat('h:mm a').format(note.reminderDateTime!),
+                                              style: const TextStyle(
+                                                color: Color(0xFF8AC53E),
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
-                                      PopupMenuButton<String>(
+                                      note.isPrivate
+                                          ? PopupMenuButton<String>(
                                         icon: const Icon(Icons.more_vert, color: AppColors.secondaryText, size: 20),
                                         color: AppColors.cardColor,
                                         onSelected: (value) {
                                           if (value == 'edit') {
-                                            if (note.isPrivate && note.id != null) {
-                                              _showPasswordDialog(context, note.id!, openNoteScreen);
+                                            if (note.isPrivate && note.id != null && !isUnlockedInHome) {
+                                              _showPasswordDialog(context, note.id!, () {
+                                                setState(() {
+                                                  _unlockedNotesIds.add(note.id!);
+                                                });
+                                              });
                                             } else {
                                               openNoteScreen();
                                             }
@@ -262,20 +319,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                             value: 'edit',
                                             child: Text('Edit Note', style: TextStyle(color: AppColors.primaryText)),
                                           ),
-                                          if (note.isPrivate)
-                                            const PopupMenuItem(
-                                              value: 'edit_password',
-                                              child: Text('Edit Password', style: TextStyle(color: AppColors.primaryText)),
-                                            ),
+                                          const PopupMenuItem(
+                                            value: 'edit_password',
+                                            child: Text('Edit Password', style: TextStyle(color: AppColors.primaryText)),
+                                          ),
                                           const PopupMenuItem(
                                             value: 'delete',
                                             child: Text('Delete', style: TextStyle(color: Colors.redAccent)),
                                           ),
                                         ],
+                                      )
+                                          : IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                                        onPressed: () {
+                                          if (note.id != null) {
+                                            final bloc = BlocProvider.of<NotesBloc>(context);
+                                            bloc.add(DeleteNoteEvent(note.id!));
+                                            bloc.add(FetchNotesEvent());
+                                          }
+                                        },
                                       ),
                                     ],
                                   ),
-                                  if (note.isPrivate)
+                                  const SizedBox(height: 1),
+                                  if (note.isPrivate && !isUnlockedInHome)
                                     const Center(
                                       child: Padding(
                                         padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -287,17 +356,121 @@ class _HomeScreenState extends State<HomeScreen> {
                                       note.title,
                                       style: const TextStyle(
                                         color: AppColors.primaryText,
-                                        fontSize: 16,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     if (note.content.isNotEmpty) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        note.content,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(color: AppColors.secondaryText, fontSize: 13),
+                                      const SizedBox(height: 10),
+                                      ...note.content.split('\n').map((line) {
+                                        final trimmed = line.trim();
+                                        bool isChecked = false;
+                                        String itemText = trimmed;
+
+                                        if (trimmed.startsWith('[x]') || trimmed.startsWith('[X]')) {
+                                          isChecked = true;
+                                          itemText = trimmed.substring(3).trim();
+                                        } else if (trimmed.startsWith('[ ]')) {
+                                          isChecked = false;
+                                          itemText = trimmed.substring(3).trim();
+                                        }
+
+                                        if (trimmed.startsWith('[x]') || trimmed.startsWith('[X]') || trimmed.startsWith('[ ]')) {
+                                          return Padding(
+                                            padding: const EdgeInsets.only(bottom: 10.0),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 16,
+                                                  height: 16,
+                                                  decoration: BoxDecoration(
+                                                    color: isChecked ? const Color(0xFF8AC53E) : Colors.transparent,
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    border: Border.all(
+                                                      color: isChecked ? const Color(0xFF8AC53E) : AppColors.secondaryText,
+                                                      width: 1.5,
+                                                    ),
+                                                  ),
+                                                  child: isChecked
+                                                      ? const Icon(
+                                                    Icons.check,
+                                                    size: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  )
+                                                      : null,
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: Text(
+                                                    itemText,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      color: AppColors.secondaryText,
+                                                      fontSize: 17,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        } else {
+                                          return Padding(
+                                            padding: const EdgeInsets.only(bottom: 4.0),
+                                            child: Text(
+                                              line,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                color: AppColors.secondaryText,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }),
+                                    ],
+                                    if (note.imagePath != null && note.imagePath!.isNotEmpty) ...[
+                                      const SizedBox(height: 10),
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.file(
+                                          File(note.imagePath!),
+                                          height: 120,
+                                          width: 320,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ],
+                                    if (note.audioPath != null && note.audioPath!.isNotEmpty) ...[
+                                      const SizedBox(height: 10),
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.background,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.mic,
+                                              color: Color(0xFF8AC53E),
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                note.audioPath!.split('/').last,
+                                                style: const TextStyle(
+                                                  color: AppColors.primaryText,
+                                                  fontSize: 14,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ],
