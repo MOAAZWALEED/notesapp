@@ -35,7 +35,6 @@ class NotificationService {
 
     await androidPlugin?.requestNotificationsPermission();
 
-    // **طلب إذن الـ Exact Alarm لأجهزة أندرويد 12+ (Android 12+)**
     await androidPlugin?.requestExactAlarmsPermission();
   }
 
@@ -52,6 +51,7 @@ class NotificationService {
 
     final int safeId = id.abs();
 
+    //ديه بستخدمها علشان الرسالته لما تيجي ميظهرش ف اخر الجمله اقواس
     final String cleanBody = body
         .replaceAll(RegExp(r'\[\s*\]|\[[xX]\]'), '')
         .trim();

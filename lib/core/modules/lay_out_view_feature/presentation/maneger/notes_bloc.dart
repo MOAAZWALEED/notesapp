@@ -102,7 +102,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
       }
     });
 
-    // التعامل مع التحقق من كلمة المرور
+    // ازاي اتحقق من كلمه المرور
     on<VerifyNotePasswordEvent>((event, emit) async {
       emit(VerifyPasswordLoadingState());
       try {
@@ -116,7 +116,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
       }
     });
 
-    // التعامل مع تحديث كلمة المرور
+    // ازاي احدث كلمه المرور
     on<UpdateNotePasswordEvent>((event, emit) async {
       emit(UpdatePasswordLoadingState());
       try {

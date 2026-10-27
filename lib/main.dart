@@ -37,11 +37,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // 1. إنشاء الـ DataSource والـ Repository
+    //  1. هنعمل  الـ DataSource والـ Repository
     final dataSource = NotesRemoteDataSourceImpl();
     final repository = NotesRepositoryImpl(remoteDataSource: dataSource);
 
-    // 2. إنشاء الـ Use Cases الستة
+    // 2. هنعمل الـ Use Cases الستة
     final getNotesUseCase = GetNotesUseCase(repository);
     final addNoteUseCase = AddNotesUseCase(repository);
     final updateNoteUseCase = UpdateNoteUseCase(repository);

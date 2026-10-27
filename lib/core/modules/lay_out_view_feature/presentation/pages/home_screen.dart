@@ -255,7 +255,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      // عرض التاريخ والوقت والتنبيه بنفس المقاسات القديمة تماماً
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -352,97 +351,109 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     )
                                   else ...[
-                                    Text(
-                                      note.title,
-                                      style: const TextStyle(
-                                        color: AppColors.primaryText,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    if (note.content.isNotEmpty) ...[
-                                      const SizedBox(height: 10),
-                                      ...note.content.split('\n').map((line) {
-                                        final trimmed = line.trim();
-                                        bool isChecked = false;
-                                        String itemText = trimmed;
-
-                                        if (trimmed.startsWith('[x]') || trimmed.startsWith('[X]')) {
-                                          isChecked = true;
-                                          itemText = trimmed.substring(3).trim();
-                                        } else if (trimmed.startsWith('[ ]')) {
-                                          isChecked = false;
-                                          itemText = trimmed.substring(3).trim();
-                                        }
-
-                                        if (trimmed.startsWith('[x]') || trimmed.startsWith('[X]') || trimmed.startsWith('[ ]')) {
-                                          return Padding(
-                                            padding: const EdgeInsets.only(bottom: 10.0),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  width: 16,
-                                                  height: 16,
-                                                  decoration: BoxDecoration(
-                                                    color: isChecked ? const Color(0xFF8AC53E) : Colors.transparent,
-                                                    borderRadius: BorderRadius.circular(5),
-                                                    border: Border.all(
-                                                      color: isChecked ? const Color(0xFF8AC53E) : AppColors.secondaryText,
-                                                      width: 1.5,
-                                                    ),
-                                                  ),
-                                                  child: isChecked
-                                                      ? const Icon(
-                                                    Icons.check,
-                                                    size: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  )
-                                                      : null,
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                note.title,
+                                                style: const TextStyle(
+                                                  color: AppColors.primaryText,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                                const SizedBox(width: 10),
-                                                Expanded(
-                                                  child: Text(
-                                                    itemText,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      color: AppColors.secondaryText,
-                                                      fontSize: 17,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        } else {
-                                          return Padding(
-                                            padding: const EdgeInsets.only(bottom: 4.0),
-                                            child: Text(
-                                              line,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                color: AppColors.secondaryText,
-                                                fontSize: 13,
                                               ),
-                                            ),
-                                          );
-                                        }
-                                      }),
-                                    ],
-                                    if (note.imagePath != null && note.imagePath!.isNotEmpty) ...[
-                                      const SizedBox(height: 10),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.file(
-                                          File(note.imagePath!),
-                                          height: 120,
-                                          width: 320,
-                                          fit: BoxFit.cover,
+                                              if (note.content.isNotEmpty) ...[
+                                                const SizedBox(height: 10),
+                                                ...note.content.split('\n').map((line) {
+                                                  final trimmed = line.trim();
+                                                  bool isChecked = false;
+                                                  String itemText = trimmed;
+
+                                                  if (trimmed.startsWith('[x]') || trimmed.startsWith('[X]')) {
+                                                    isChecked = true;
+                                                    itemText = trimmed.substring(3).trim();
+                                                  } else if (trimmed.startsWith('[ ]')) {
+                                                    isChecked = false;
+                                                    itemText = trimmed.substring(3).trim();
+                                                  }
+
+                                                  if (trimmed.startsWith('[x]') || trimmed.startsWith('[X]') || trimmed.startsWith('[ ]')) {
+                                                    return Padding(
+                                                      padding: const EdgeInsets.only(bottom: 10.0),
+                                                      child: Row(
+                                                        children: [
+                                                          Container(
+                                                            width: 16,
+                                                            height: 16,
+                                                            decoration: BoxDecoration(
+                                                              color: isChecked ? const Color(0xFF8AC53E) : Colors.transparent,
+                                                              borderRadius: BorderRadius.circular(5),
+                                                              border: Border.all(
+                                                                color: isChecked ? const Color(0xFF8AC53E) : AppColors.secondaryText,
+                                                                width: 1.5,
+                                                              ),
+                                                            ),
+                                                            child: isChecked
+                                                                ? const Icon(
+                                                              Icons.check,
+                                                              size: 15,
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.black,
+                                                            )
+                                                                : null,
+                                                          ),
+                                                          const SizedBox(width: 10),
+                                                          Expanded(
+                                                            child: Text(
+                                                              itemText,
+                                                              maxLines: 1,
+                                                              overflow: TextOverflow.ellipsis,
+                                                              style: const TextStyle(
+                                                                color: AppColors.secondaryText,
+                                                                fontSize: 17,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    return Padding(
+                                                      padding: const EdgeInsets.only(bottom: 4.0),
+                                                      child: Text(
+                                                        line,
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: const TextStyle(
+                                                          color: AppColors.secondaryText,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }
+                                                }),
+                                              ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                        if (note.imagePath != null && note.imagePath!.isNotEmpty) ...[
+                                          const SizedBox(width: 12),
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: Image.file(
+                                              File(note.imagePath!),
+                                              height: 100,
+                                              width: 100,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
                                     if (note.audioPath != null && note.audioPath!.isNotEmpty) ...[
                                       const SizedBox(height: 10),
                                       Container(

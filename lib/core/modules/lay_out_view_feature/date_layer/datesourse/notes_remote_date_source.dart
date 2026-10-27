@@ -23,7 +23,7 @@ class NotesRemoteDataSourceImpl implements NotesRemoteDataSource {
 
   @override
   Future<void> addNote(NoteModel note) async {
-    // استخدام doc(note.id).set للالتزام بنفس الـ ID
+
     if (note.id != null && note.id!.isNotEmpty) {
       await firestore.collection('notes').doc(note.id).set(note.toJson());
     } else {
